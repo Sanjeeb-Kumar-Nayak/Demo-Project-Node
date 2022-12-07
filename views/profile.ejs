@@ -1,0 +1,19 @@
+<html>
+    <head>
+        <title>Profile</title>
+    </head>
+    <body>
+        <%- include('common/header'); %>
+        <h1>This is my profile.ejs page <%= user.name %></h1>
+        <ul>
+            <% user.skills.forEach((item)=>{ %>
+                <li><%= item %></li>
+            <% }) %>
+        </ul>
+        <ol>
+            <% user.skills.map((v)=>{ %>
+                <li><%= v %></li>
+            <% }) %>
+        </ol>
+    </body>
+</html>
