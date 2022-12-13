@@ -1,6 +1,6 @@
 const express = require('express');
-require('./mongoose/collection');
-const productModel = require('./mongoose/schema');
+require('../mongoose/collection');
+const productModel = require('../mongoose/schema');
 
 const app = express();
 app.use(express.json());
