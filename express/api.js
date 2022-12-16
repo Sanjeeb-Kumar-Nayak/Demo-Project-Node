@@ -7,7 +7,8 @@ app.use(express.json());
 app.get('/', async (req,resp)=>{
     let data = await dbConnect();
     data = await data.find().toArray();
-    resp.send(data);
+    let response = {"status":1, "message": "Sucess", "data":data}
+    resp.send(response);
 });
 
 app.post('/', async (req,resp)=>{

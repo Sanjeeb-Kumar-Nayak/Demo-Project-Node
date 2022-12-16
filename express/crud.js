@@ -14,7 +14,8 @@ app.post('/create',async (req,resp)=>{
 
 app.get('/list',async (req,resp)=>{
     let data = await productModel.find();
-    resp.send(data);
+    let response = {"status":1, "message": "Sucess", "data":data}
+    resp.send(response);
 });
 
 app.delete('/delete',async (req,resp)=>{
