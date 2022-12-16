@@ -2,7 +2,13 @@ const express = require('express');
 const dbConnect = require('../mongodb/database');
 const app = express();
 
+const cors = require('cors');
+
 app.use(express.json());
+
+app.use(cors({
+    origin: '*'
+}));
 
 app.get('/', async (req,resp)=>{
     let data = await dbConnect();
