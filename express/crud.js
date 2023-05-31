@@ -21,7 +21,7 @@ app.post('/create',async (req,resp)=>{
 
 app.post('/list',async (req,resp)=>{
     let data = await productModel.find();
-    let response = {"status":1, "message": "Sucess", "data":data}
+    let response = {"status":1, "message": "Success", "data":data}
     resp.send(response);
 });
 

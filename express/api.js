@@ -12,7 +12,7 @@ app.use(cors({
 app.get('/', async (req,resp)=>{
     let data = await dbConnect();
     data = await data.find().toArray();
-    let response = {"status":1, "message": "Sucess", "data":data}
+    let response = {"status":1, "message": "Success", "data":data}
     resp.send(response);
 });
 
