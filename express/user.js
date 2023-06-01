@@ -27,18 +27,25 @@ app.post("/userData", (req, resp) => {
 });
 
 app.post("/createUser", (req, resp) => {
-  let data = {
-    email: request.body.email,
-    mobile: request.body.mobile,
-    name: request.body.name,
-    password: request.body.password,
-  };
+  const { email, mobile, name, password } = req.body;
   connection.query(
-    "insert into users (email, mobile, name, password) values ($1, $2, $3, $4)",
-    data,
+    "insert into users (email, mobile, name, password) values ($1, $2, $3, $4) returning *",
+    [email, mobile, name, password],
     (err, result) => {
-      if (err) err;
-      resp.send(result);
+      let data = { status: 1, message: "Success", data: result.rows };
+      resp.send(data);
+    }
+  );
+});
+
+app.post("/updateUser", (req, resp) => {
+  const { email, mobile, name, password } = req.body;
+  connection.query(
+    "update users set email = $1, mobile = $2, name = $3, password = $4 where mobile = $5 returning *",
+    [email, mobile, name, password],
+    (err, result) => {
+      let data = { status: 1, message: "Success", data: result };
+      resp.send(data);
     }
   );
 });
