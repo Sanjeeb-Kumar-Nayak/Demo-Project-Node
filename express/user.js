@@ -21,19 +21,64 @@ app.post("/user/login", async (req, resp) => {
 
 app.post("/userData", (req, resp) => {
   connection.query("select * from users", (err, result) => {
-    let data = { status: 1, message: "Success", data: result.rows };
-    resp.send(data);
+    if (err) {
+      let data = { status: 0, message: "Failed", data: result };
+      resp.send(data);
+    } else {
+      let data = { status: 1, message: "Success", data: result.rows };
+      resp.send(data);
+    }
   });
 });
 
 app.post("/createUser", (req, resp) => {
   const { email, mobile, name, password } = req.body;
   connection.query(
-    "insert into users (email, mobile, name, password) values ($1, $2, $3, $4) returning *",
-    [email, mobile, name, password],
+    "select * from users where email = $1 or mobile = $2",
+    [email, mobile],
     (err, result) => {
-      let data = { status: 1, message: "Successfully User Created", data: result.rows };
-      resp.send(data);
+      if (result.rowCount != 0) {
+        connection.query(
+          "select * from users where email = $1",
+          [email],
+          (err, result) => {
+            if (result.rowCount != 0) {
+              connection.query(
+                "select * from users where mobile = $1",
+                [mobile],
+                (err, result) => {
+                  if (result.rowCount != 0) {
+                    let data = {
+                      status: 0,
+                      message: "Email & Mobile Already Exist",
+                    };
+                    resp.send(data);
+                  } else {
+                    let data = { status: 0, message: "Email Already Exist" };
+                    resp.send(data);
+                  }
+                }
+              );
+            } else {
+              let data = { status: 0, message: "Mobile Already Exist" };
+              resp.send(data);
+            }
+          }
+        );
+      } else {
+        connection.query(
+          "insert into users (email, mobile, name, password) values ($1, $2, $3, $4) returning *",
+          [email, mobile, name, password],
+          (err, result) => {
+            let data = {
+              status: 1,
+              message: "User Created Successfully",
+              data: result.rows,
+            };
+            resp.send(data);
+          }
+        );
+      }
     }
   );
 });
@@ -45,18 +90,24 @@ app.post("/updateUser/:id", (req, resp) => {
     "update users set email = $1, mobile = $2, name = $3, password = $4 where id = $5",
     [email, mobile, name, password, id],
     (err, result) => {
-      let data = { status: 1, message: "Successfully User Updated", data: result };
+      let data = {
+        status: 1,
+        message: "User Updated Successfully"
+      };
       resp.send(data);
     }
   );
 });
 
-app.post("/deleteUser/:id", (req,resp) => {
+app.post("/deleteUser/:id", (req, resp) => {
   const id = parseInt(req.params.id);
-  connection.query("delete from users where id = $1", [id] ,(err, result) => {
-    let data = { status: 1, message: "Successfully User Deleted", data: result };
-      resp.send(data);
-  })
-})
+  connection.query("delete from users where id = $1", [id], (err, result) => {
+    let data = {
+      status: 1,
+      message: "User Deleted Successfully",
+    };
+    resp.send(data);
+  });
+});
 
 app.listen(8080);
