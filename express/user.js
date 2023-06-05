@@ -83,6 +83,57 @@ app.post("/createUser", (req, resp) => {
   );
 });
 
+app.post("/loginUser", (req, resp) => {
+  const { email, password } = req.body;
+  connection.query(
+    "select * from users where email = $1 or password = $2",
+    [email, password],
+    (err, result) => {
+      if (result.rowCount != 0) {
+        connection.query(
+          "select * from users where email = $1",
+          [email],
+          (err, result) => {
+            if (result.rowCount != 0) {
+              connection.query(
+                "select * from users where password = $1",
+                [password],
+                (err, result) => {
+                  if (result.rowCount != 0) {
+                    let data = {
+                      status: 1,
+                      message: "Login Successfully",
+                      data: result.rows,
+                    };
+                    resp.send(data);
+                  } else {
+                    let data = {
+                      status: 1,
+                      message: "Wrong Password",
+                      data: result.rows,
+                    };
+                    resp.send(data);
+                  }
+                }
+              );
+            } else {
+              let data = {
+                status: 1,
+                message: "Wrong Email",
+                data: result.rows,
+              };
+              resp.send(data);
+            }
+          }
+        );
+      } else {
+        let data = { status: 1, message: "Login Failed", data: result.rows };
+        resp.send(data);
+      }
+    }
+  );
+});
+
 app.post("/updateUser/:id", (req, resp) => {
   const id = parseInt(req.params.id);
   const { email, mobile, name, password } = req.body;
@@ -92,7 +143,7 @@ app.post("/updateUser/:id", (req, resp) => {
     (err, result) => {
       let data = {
         status: 1,
-        message: "User Updated Successfully"
+        message: "User Updated Successfully",
       };
       resp.send(data);
     }
