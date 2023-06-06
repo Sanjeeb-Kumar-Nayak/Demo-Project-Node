@@ -134,6 +134,73 @@ app.post("/loginUser", (req, resp) => {
   );
 });
 
+app.post("/changePassword/:id", (req, resp) => {
+  const id = parseInt(req.params.id);
+  const { currentPassword, newPassword, confirmPassword } = req.body;
+  connection.query(
+    "select * from users where id = $1 and password = $2",
+    [id, currentPassword],
+    (err, result) => {
+      if (result.rowCount != 0) {
+        if (newPassword == confirmPassword) {
+          connection.query(
+            "update users set password = $1 where id = $2",
+            [confirmPassword, id],
+            (err, result) => {
+              let data = {
+                status: 1,
+                message: "Password Changed Successfully",
+              };
+              resp.send(data);
+            }
+          );
+        } else {
+          let data = { status: 0, message: "Password does not match" };
+          resp.send(data);
+        }
+      } else {
+        let data = { status: 0, message: "Enter Wrong Password" };
+        resp.send(data);
+      }
+    }
+  );
+});
+
+app.post("/forgotPassword/sendOtp", (req, resp) => {
+  const { email } = req.body;
+  connection.query(
+    "select * from users where email = $1",
+    [email],
+    (err, result) => {
+      if (result.rowCount != 0) {
+        let data = { status: 0, message: "Send OTP" };
+        resp.send(data);
+      } else {
+        let data = { status: 0, message: "User does not exist" };
+        resp.send(data);
+      }
+    }
+  );
+});
+
+app.post("/forgotPassword/resetPassword/:id", (req, resp) => {
+  const id = parseInt(req.params.id);
+  const { newPassword, confirmPassword } = req.body;
+  if (newPassword == confirmPassword) {
+    connection.query(
+      "update users set password = $1 where id = $2",
+      [confirmPassword, id],
+      (err, result) => {
+        let data = { status: 1, message: "Reset Password Successfully" };
+        resp.send(data);
+      }
+    );
+  } else {
+    let data = { status: 0, message: "Password does not match" };
+    resp.send(data);
+  }
+});
+
 app.post("/updateUser/:id", (req, resp) => {
   const id = parseInt(req.params.id);
   const { email, mobile, name, password } = req.body;
