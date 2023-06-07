@@ -128,7 +128,7 @@ app.post("/loginUser", (req, resp) => {
           }
         );
       } else {
-        let data = { status: 1, message: "Login Failed", data: result.rows };
+        let data = { status: 1, message: "Wrong Email & Password", data: result.rows };
         resp.send(data);
       }
     }
