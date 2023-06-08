@@ -1,5 +1,6 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 const dbConnect = require("../mongodb/database");
 const connection = require("../postgresql/config");
 const cors = require("cors");
@@ -32,8 +33,11 @@ app.post("/userData", (req, resp) => {
   });
 });
 
-app.post("/createUser", (req, resp) => {
+app.post("/createUser", async (req, resp) => {
   const { email, mobile, name, password } = req.body;
+  const salt = await bcrypt.genSalt(10);
+  const hassedPassword = await bcrypt.hash(password, salt);
+
   connection.query(
     "select * from users where email = $1 or mobile = $2",
     [email, mobile],
@@ -69,7 +73,7 @@ app.post("/createUser", (req, resp) => {
       } else {
         connection.query(
           "insert into users (email, mobile, name, password) values ($1, $2, $3, $4) returning *",
-          [email, mobile, name, password],
+          [email, mobile, name, hassedPassword],
           (err, result) => {
             let data = {
               status: 1,
@@ -84,69 +88,58 @@ app.post("/createUser", (req, resp) => {
   );
 });
 
-app.post("/loginUser", (req, resp) => {
+app.post("/loginUser", async (req, resp) => {
   const { email, password } = req.body;
+
   connection.query(
-    "select * from users where email = $1 or password = $2",
-    [email, password],
+    "select * from users where email = $1",
+    [email],
     (err, result) => {
       if (result.rowCount != 0) {
-        connection.query(
-          "select * from users where email = $1",
-          [email],
-          (err, result) => {
-            if (result.rowCount != 0) {
-              connection.query(
-                "select * from users where password = $1",
-                [password],
-                (err, result) => {
-                  if (result.rowCount != 0) {
-                    let data = {
-                      status: 1,
-                      message: "Login Successfully",
-                      data: result.rows,
-                    };
-                    resp.send(data);
-                  } else {
-                    let data = {
-                      status: 1,
-                      message: "Wrong Password",
-                      data: result.rows,
-                    };
-                    resp.send(data);
-                  }
-                }
-              );
-            } else {
-              let data = {
-                status: 1,
-                message: "Wrong Email",
-                data: result.rows,
-              };
-              resp.send(data);
-            }
+        const userPassword = result.rows[0].password;
+        bcrypt.compare(password, userPassword, (err, result) => {
+          if (result) {
+            let data = {
+              status: 1,
+              message: "Login Successfully",
+              data: result.rows,
+            };
+            resp.send(data);
+          } else {
+            let data = {
+              status: 1,
+              message: "Wrong Password",
+              data: result.rows,
+            };
+            resp.send(data);
           }
-        );
+        });
       } else {
-        let data = { status: 1, message: "Wrong Email & Password", data: result.rows };
+        let data = {
+          status: 1,
+          message: "Wrong Email",
+          data: result.rows,
+        };
         resp.send(data);
       }
     }
   );
 });
 
-app.post("/changePassword/:id", (req, resp) => {
+app.post("/changePassword/:id", async (req, resp) => {
   const id = parseInt(req.params.id);
   const { currentPassword, newPassword, confirmPassword } = req.body;
-  connection.query(
-    "select * from users where id = $1 and password = $2",
-    [id, currentPassword],
-    (err, result) => {
-      if (result.rowCount != 0) {
+  const salt = await bcrypt.genSalt(10);
+  const hassedPassword = await bcrypt.hash(confirmPassword, salt);
+
+  connection.query("select * from users where id = $1", [id], (err, result) => {
+    const userPassword = result.rows[0].password;
+    bcrypt.compare(currentPassword, userPassword, (err, result) => {
+      if (result) {
         if (newPassword == confirmPassword) {
           connection.query(
             "update users set password = $1 where id = $2",
-            [confirmPassword, id],
+            [hassedPassword, id],
             (err, result) => {
               let data = {
                 status: 1,
@@ -163,8 +156,8 @@ app.post("/changePassword/:id", (req, resp) => {
         let data = { status: 0, message: "Enter Wrong Password" };
         resp.send(data);
       }
-    }
-  );
+    });
+  });
 });
 
 app.post("/forgotPassword/sendOtp", (req, resp) => {
@@ -184,13 +177,16 @@ app.post("/forgotPassword/sendOtp", (req, resp) => {
   );
 });
 
-app.post("/forgotPassword/resetPassword/:id", (req, resp) => {
+app.post("/forgotPassword/resetPassword/:id", async (req, resp) => {
   const id = parseInt(req.params.id);
   const { newPassword, confirmPassword } = req.body;
+  const salt = await bcrypt.genSalt(10);
+  const hassedPassword = await bcrypt.hash(confirmPassword, salt);
+
   if (newPassword == confirmPassword) {
     connection.query(
       "update users set password = $1 where id = $2",
-      [confirmPassword, id],
+      [hassedPassword, id],
       (err, result) => {
         let data = { status: 1, message: "Reset Password Successfully" };
         resp.send(data);
@@ -202,12 +198,15 @@ app.post("/forgotPassword/resetPassword/:id", (req, resp) => {
   }
 });
 
-app.post("/updateUser/:id", (req, resp) => {
+app.post("/updateUser/:id", async (req, resp) => {
   const id = parseInt(req.params.id);
   const { email, mobile, name, password } = req.body;
+  const salt = await bcrypt.genSalt(10);
+  const hassedPassword = await bcrypt.hash(password, salt);
+
   connection.query(
     "update users set email = $1, mobile = $2, name = $3, password = $4 where id = $5",
-    [email, mobile, name, password, id],
+    [email, mobile, name, hassedPassword, id],
     (err, result) => {
       let data = {
         status: 1,
