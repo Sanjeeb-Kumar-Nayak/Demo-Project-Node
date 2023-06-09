@@ -5,6 +5,7 @@ const dbConnect = require("../mongodb/database");
 const connection = require("../postgresql/config");
 const cors = require("cors");
 const app = express();
+const jwtKey = "secret";
 
 app.use(express.json());
 
@@ -99,12 +100,23 @@ app.post("/loginUser", async (req, resp) => {
         const userPassword = result.rows[0].password;
         bcrypt.compare(password, userPassword, (err, result) => {
           if (result) {
-            let data = {
-              status: 1,
-              message: "Login Successfully",
-              data: result.rows,
-            };
-            resp.send(data);
+            jwt.sign({ result }, jwtKey, (err, token) => {
+              if (err) {
+                let data = {
+                  status: 0,
+                  message: "User not found",
+                };
+                resp.send(data);
+              } else {
+                let data = {
+                  status: 1,
+                  message: "Login Successfully",
+                  data: result.rows,
+                  auth: token,
+                };
+                resp.send(data);
+              }
+            });
           } else {
             let data = {
               status: 1,
