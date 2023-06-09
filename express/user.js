@@ -79,7 +79,7 @@ app.post("/createUser", async (req, resp) => {
             let data = {
               status: 1,
               message: "User Created Successfully",
-              data: result.rows,
+              data: result.rows[0],
             };
             resp.send(data);
           }
@@ -97,10 +97,11 @@ app.post("/loginUser", async (req, resp) => {
     [email],
     (err, result) => {
       if (result.rowCount != 0) {
-        const userPassword = result.rows[0].password;
+        const userDetails = result.rows[0];
+        const userPassword = userDetails.password;
         bcrypt.compare(password, userPassword, (err, result) => {
           if (result) {
-            jwt.sign({ result }, jwtKey, (err, token) => {
+            jwt.sign(userDetails, jwtKey, (err, result) => {
               if (err) {
                 let data = {
                   status: 0,
@@ -111,26 +112,24 @@ app.post("/loginUser", async (req, resp) => {
                 let data = {
                   status: 1,
                   message: "Login Successfully",
-                  data: result.rows,
-                  auth: token,
+                  data: userDetails,
+                  token: result,
                 };
                 resp.send(data);
               }
             });
           } else {
             let data = {
-              status: 1,
+              status: 0,
               message: "Wrong Password",
-              data: result.rows,
             };
             resp.send(data);
           }
         });
       } else {
         let data = {
-          status: 1,
+          status: 0,
           message: "Wrong Email",
-          data: result.rows,
         };
         resp.send(data);
       }
@@ -138,8 +137,10 @@ app.post("/loginUser", async (req, resp) => {
   );
 });
 
-app.post("/changePassword/:id", async (req, resp) => {
-  const id = parseInt(req.params.id);
+app.post("/changePassword", verifyToken, async (req, resp) => {
+  const token = req.body["token"];
+  const decodeToken = jwt.decode(token, jwtKey);
+  const id = parseInt(decodeToken.id);
   const { currentPassword, newPassword, confirmPassword } = req.body;
   const salt = await bcrypt.genSalt(10);
   const hassedPassword = await bcrypt.hash(confirmPassword, salt);
@@ -179,7 +180,7 @@ app.post("/forgotPassword/sendOtp", (req, resp) => {
     [email],
     (err, result) => {
       if (result.rowCount != 0) {
-        let data = { status: 0, message: "Send OTP" };
+        let data = { status: 1, message: "Send OTP" };
         resp.send(data);
       } else {
         let data = { status: 0, message: "User does not exist" };
@@ -189,8 +190,10 @@ app.post("/forgotPassword/sendOtp", (req, resp) => {
   );
 });
 
-app.post("/forgotPassword/resetPassword/:id", async (req, resp) => {
-  const id = parseInt(req.params.id);
+app.post("/forgotPassword/resetPassword", verifyToken, async (req, resp) => {
+  const token = req.body["token"];
+  const decodeToken = jwt.decode(token, jwtKey);
+  const id = parseInt(decodeToken.id);
   const { newPassword, confirmPassword } = req.body;
   const salt = await bcrypt.genSalt(10);
   const hassedPassword = await bcrypt.hash(confirmPassword, salt);
@@ -210,8 +213,10 @@ app.post("/forgotPassword/resetPassword/:id", async (req, resp) => {
   }
 });
 
-app.post("/updateUser/:id", async (req, resp) => {
-  const id = parseInt(req.params.id);
+app.post("/updateUser", verifyToken, async (req, resp) => {
+  const token = req.body["token"];
+  const decodeToken = jwt.decode(token, jwtKey);
+  const id = parseInt(decodeToken.id);
   const { email, mobile, name, password } = req.body;
   const salt = await bcrypt.genSalt(10);
   const hassedPassword = await bcrypt.hash(password, salt);
@@ -229,8 +234,11 @@ app.post("/updateUser/:id", async (req, resp) => {
   );
 });
 
-app.post("/deleteUser/:id", (req, resp) => {
-  const id = parseInt(req.params.id);
+app.post("/deleteUser", verifyToken, (req, resp) => {
+  const token = req.body["token"];
+  const decodeToken = jwt.decode(token, jwtKey);
+  const id = parseInt(decodeToken.id);
+
   connection.query("delete from users where id = $1", [id], (err, result) => {
     let data = {
       status: 1,
@@ -239,5 +247,28 @@ app.post("/deleteUser/:id", (req, resp) => {
     resp.send(data);
   });
 });
+
+function verifyToken(req, resp, next) {
+  const token = req.body["token"];
+  if (token) {
+    jwt.verify(token, jwtKey, (err, valid) => {
+      if (err) {
+        let data = {
+          status: 0,
+          message: "Please provide valid token",
+        };
+        resp.status(401).send(data);
+      } else {
+        next();
+      }
+    });
+  } else {
+    let data = {
+      status: 0,
+      message: "Please add token",
+    };
+    resp.status(403).send(data);
+  }
+}
 
 app.listen(8080);
