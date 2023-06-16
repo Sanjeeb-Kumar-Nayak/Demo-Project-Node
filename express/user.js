@@ -1,4 +1,6 @@
 const express = require("express");
+const nodeMailer = require("nodemailer");
+const otpGenerator = require("otp-generator");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const dbConnect = require("../mongodb/database");
@@ -14,6 +16,16 @@ app.use(
     origin: "*",
   })
 );
+
+let transporter = nodeMailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: process.env.SMTP_PORT,
+  secure: false,
+  auth: {
+    user: process.env.SMTP_MAIL,
+    pass: process.env.SMTP_PASSWORD,
+  },
+});
 
 app.post("/user/login", async (req, resp) => {
   let data = await dbConnect();
@@ -173,15 +185,26 @@ app.post("/changePassword", verifyToken, async (req, resp) => {
   });
 });
 
-app.post("/forgotPassword/sendOtp", (req, resp) => {
+app.post("/forgotPassword/sendOtp", async (req, resp) => {
   const { email } = req.body;
+  var mailOption = {
+    from: process.env.SMTP_MAIL,
+    to: email,
+    message: "wecome",
+  };
   connection.query(
     "select * from users where email = $1",
     [email],
     (err, result) => {
       if (result.rowCount != 0) {
-        let data = { status: 1, message: "Send OTP" };
-        resp.send(data);
+        transporter.sendMail(mailOption, (err, info) => {
+          if (err) {
+            console.log(err);
+          } else {
+            let data = { status: 1, message: "Send OTP" };
+            resp.send(data);
+          }
+        });
       } else {
         let data = { status: 0, message: "User does not exist" };
         resp.send(data);
@@ -269,6 +292,14 @@ function verifyToken(req, resp, next) {
     };
     resp.status(403).send(data);
   }
+}
+
+function generateOTP() {
+  const otp = otpGenerator.generate(6, {
+    upperCaseAlphabets: false,
+    lowerCaseAlphabets: false,
+    specialChars: false,
+  });
 }
 
 app.listen(8080);
