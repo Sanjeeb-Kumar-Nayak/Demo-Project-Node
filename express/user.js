@@ -44,7 +44,7 @@ app.post("/userData", (req, resp) => {
         status: 1,
         message: "Success",
         totalItems: result.rowCount,
-        data: result,
+        data: result.rows,
       };
       resp.send(data);
     }
