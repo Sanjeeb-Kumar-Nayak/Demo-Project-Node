@@ -1,21 +1,20 @@
-const express = require("express");
+// const express = require("express");
 const nodeMailer = require("nodemailer");
 const otpGenerator = require("otp-generator");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-const dbConnect = require("../mongodb/database");
 const connection = require("../postgresql/config");
-const cors = require("cors");
-const app = express();
+// const cors = require("cors");
+// const app = express();
 const jwtKey = "secret";
 
-app.use(express.json());
+// app.use(express.json());
 
-app.use(
-  cors({
-    origin: "*",
-  })
-);
+// app.use(
+//   cors({
+//     origin: "*",
+//   })
+// );
 
 let transporter = nodeMailer.createTransport({
   host: process.env.SMTP_HOST,
@@ -27,14 +26,7 @@ let transporter = nodeMailer.createTransport({
   },
 });
 
-app.post("/user/login", async (req, resp) => {
-  let data = await dbConnect();
-  data = await data.find().toArray();
-  let response = { status: 1, message: "Success", data: data };
-  resp.send(response);
-});
-
-app.post("/user/userData", (req, resp) => {
+const listingUser = (req, resp) => {
   connection.query("select * from users", (err, result) => {
     if (err) {
       let data = { status: 0, message: "Failed", data: result };
@@ -49,9 +41,9 @@ app.post("/user/userData", (req, resp) => {
       resp.send(data);
     }
   });
-});
+};
 
-app.post("/user/filterUser", (req, resp) => {
+const filterUser = (req, resp) => {
   const { email, mobile, name } = req.body;
 
   if (email) {
@@ -155,9 +147,9 @@ app.post("/user/filterUser", (req, resp) => {
       }
     });
   }
-});
+};
 
-app.post("/user/createUser", async (req, resp) => {
+const createUser = async (req, resp) => {
   const { email, mobile, name, password } = req.body;
   const salt = await bcrypt.genSalt(10);
   const hassedPassword = await bcrypt.hash(password, salt);
@@ -210,9 +202,9 @@ app.post("/user/createUser", async (req, resp) => {
       }
     }
   );
-});
+};
 
-app.post("/user/loginUser", async (req, resp) => {
+const loginUser = async (req, resp) => {
   const { email, password } = req.body;
 
   connection.query(
@@ -258,9 +250,9 @@ app.post("/user/loginUser", async (req, resp) => {
       }
     }
   );
-});
+};
 
-app.post("/user/changePassword", verifyToken, async (req, resp) => {
+const changePassword = async (req, resp) => {
   const token = req.body["token"];
   const decodeToken = jwt.decode(token, jwtKey);
   const id = parseInt(decodeToken.id);
@@ -294,9 +286,10 @@ app.post("/user/changePassword", verifyToken, async (req, resp) => {
       }
     });
   });
-});
+};
 
-app.post("/user/forgotPassword/sendOtp", async (req, resp) => {
+const sendOtp = async (req, resp) => {
+  // app.post("/user/forgotPassword/sendOtp", async (req, resp) => {
   const { email } = req.body;
   var mailOption = {
     from: process.env.SMTP_MAIL,
@@ -322,9 +315,14 @@ app.post("/user/forgotPassword/sendOtp", async (req, resp) => {
       }
     }
   );
-});
+  // });
+};
 
-app.post("/user/forgotPassword/resetPassword", verifyToken, async (req, resp) => {
+const resetPassword = async (req, resp) => {
+  // app.post(
+  //   "/user/forgotPassword/resetPassword",
+  //   verifyToken,
+  //   async (req, resp) => {
   const token = req.body["token"];
   const decodeToken = jwt.decode(token, jwtKey);
   const id = parseInt(decodeToken.id);
@@ -345,9 +343,11 @@ app.post("/user/forgotPassword/resetPassword", verifyToken, async (req, resp) =>
     let data = { status: 0, message: "Password does not match" };
     resp.send(data);
   }
-});
+  //   }
+  // );
+};
 
-app.post("/user/updateUser", verifyToken, async (req, resp) => {
+const updateUser = async () => {
   const token = req.body["token"];
   const decodeToken = jwt.decode(token, jwtKey);
   const id = parseInt(decodeToken.id);
@@ -366,9 +366,9 @@ app.post("/user/updateUser", verifyToken, async (req, resp) => {
       resp.send(data);
     }
   );
-});
+};
 
-app.post("/user/deleteUser", verifyToken, (req, resp) => {
+const deleteUser = (req, resp) => {
   const token = req.body["token"];
   const decodeToken = jwt.decode(token, jwtKey);
   const id = parseInt(decodeToken.id);
@@ -380,7 +380,7 @@ app.post("/user/deleteUser", verifyToken, (req, resp) => {
     };
     resp.send(data);
   });
-});
+};
 
 function verifyToken(req, resp, next) {
   const token = req.body["token"];
@@ -413,4 +413,16 @@ function generateOTP() {
   });
 }
 
-app.listen(8080);
+module.exports = {
+  loginUser,
+  listingUser,
+  filterUser,
+  createUser,
+  deleteUser,
+  updateUser,
+  changePassword,
+  resetPassword,
+  sendOtp,
+  verifyToken,
+  generateOTP,
+};
