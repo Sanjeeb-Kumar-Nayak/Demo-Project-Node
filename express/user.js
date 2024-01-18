@@ -1,20 +1,9 @@
-// const express = require("express");
 const nodeMailer = require("nodemailer");
 const otpGenerator = require("otp-generator");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const connection = require("../postgresql/config");
-// const cors = require("cors");
-// const app = express();
 const jwtKey = "secret";
-
-// app.use(express.json());
-
-// app.use(
-//   cors({
-//     origin: "*",
-//   })
-// );
 
 let transporter = nodeMailer.createTransport({
   host: process.env.SMTP_HOST,
@@ -411,6 +400,7 @@ function generateOTP() {
     lowerCaseAlphabets: false,
     specialChars: false,
   });
+  console.log(otp);
 }
 
 module.exports = {
