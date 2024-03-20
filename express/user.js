@@ -6,12 +6,18 @@ const connection = require("../postgresql/config");
 const jwtKey = "secret";
 
 let transporter = nodeMailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: process.env.SMTP_PORT,
-  secure: false,
+  service: "gmail",
+  port: 465,
+  secure: true,
+  logger: true,
+  debug: true,
+  secureConnection: false,
   auth: {
-    user: process.env.SMTP_MAIL,
-    pass: process.env.SMTP_PASSWORD,
+    user: "skn.tilu@gmail.com",
+    pass: "plajrafakposgczt",
+  },
+  tls: {
+    rejectUnauthorized: true,
   },
 });
 
@@ -281,9 +287,10 @@ const sendOtp = async (req, resp) => {
   // app.post("/user/forgotPassword/sendOtp", async (req, resp) => {
   const { email } = req.body;
   var mailOption = {
-    from: process.env.SMTP_MAIL,
+    from: "skn.tilu@gmail.com",
     to: email,
     message: "wecome",
+    otp: generateOTP,
   };
   connection.query(
     "select * from users where email = $1",
@@ -336,7 +343,7 @@ const resetPassword = async (req, resp) => {
   // );
 };
 
-const updateUser = async () => {
+const updateUser = async (req, resp) => {
   const token = req.body["token"];
   const decodeToken = jwt.decode(token, jwtKey);
   const id = parseInt(decodeToken.id);
