@@ -18,7 +18,7 @@ app.post("/user/createUser", user.createUser);
 app.post("/user/deleteUser", user.verifyToken, user.deleteUser);
 app.post("/user/updateUser", user.verifyToken, user.updateUser);
 app.post("/user/changePassword", user.verifyToken, user.changePassword);
-app.post("/user/forgotPassword/resetPassword", user.verifyToken, user.resetPassword);
-app.post("/user/forgotPassword/sendOtp", user.sendOtp);
+app.post("/user/resetPassword", user.verifyToken, user.resetPassword);
+app.post("/user/sendOtp", user.sendOtp);
 
 app.listen(8080);

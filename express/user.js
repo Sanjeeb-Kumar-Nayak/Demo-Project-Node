@@ -284,13 +284,11 @@ const changePassword = async (req, resp) => {
 };
 
 const sendOtp = async (req, resp) => {
-  // app.post("/user/forgotPassword/sendOtp", async (req, resp) => {
   const { email } = req.body;
   var mailOption = {
     from: "skn.tilu@gmail.com",
     to: email,
     message: "wecome",
-    otp: generateOTP,
   };
   connection.query(
     "select * from users where email = $1",
@@ -311,14 +309,9 @@ const sendOtp = async (req, resp) => {
       }
     }
   );
-  // });
 };
 
 const resetPassword = async (req, resp) => {
-  // app.post(
-  //   "/user/forgotPassword/resetPassword",
-  //   verifyToken,
-  //   async (req, resp) => {
   const token = req.body["token"];
   const decodeToken = jwt.decode(token, jwtKey);
   const id = parseInt(decodeToken.id);
@@ -339,8 +332,6 @@ const resetPassword = async (req, resp) => {
     let data = { status: 0, message: "Password does not match" };
     resp.send(data);
   }
-  //   }
-  // );
 };
 
 const updateUser = async (req, resp) => {
@@ -407,7 +398,7 @@ function generateOTP() {
     lowerCaseAlphabets: false,
     specialChars: false,
   });
-  console.log(otp);
+  return otp;
 }
 
 module.exports = {
