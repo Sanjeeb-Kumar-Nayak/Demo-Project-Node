@@ -288,7 +288,8 @@ const sendOtp = async (req, resp) => {
   var mailOption = {
     from: "skn.tilu@gmail.com",
     to: email,
-    message: "wecome",
+    message: "OTP",
+    otp: generateOTP(),
   };
   connection.query(
     "select * from users where email = $1",
@@ -299,7 +300,11 @@ const sendOtp = async (req, resp) => {
           if (err) {
             console.log(err);
           } else {
-            let data = { status: 1, message: "Send OTP" };
+            let data = {
+              status: 1,
+              message: "OTP Send Successfully",
+              otp: generateOTP(),
+            };
             resp.send(data);
           }
         });
