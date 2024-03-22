@@ -289,8 +289,8 @@ const sendOtp = async (req, resp) => {
   var mailOption = {
     from: "skn.tilu@gmail.com",
     to: email,
-    message: "OTP",
-    otp: otp,
+    subject: "OTP",
+    text: `User verification OTP: ${otp}`,
   };
   connection.query(
     "select * from users where email = $1",
