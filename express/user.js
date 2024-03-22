@@ -284,12 +284,13 @@ const changePassword = async (req, resp) => {
 };
 
 const sendOtp = async (req, resp) => {
+  const otp = generateOTP();
   const { email } = req.body;
   var mailOption = {
     from: "skn.tilu@gmail.com",
     to: email,
     message: "OTP",
-    otp: generateOTP(),
+    otp: otp,
   };
   connection.query(
     "select * from users where email = $1",
@@ -303,8 +304,12 @@ const sendOtp = async (req, resp) => {
             let data = {
               status: 1,
               message: "OTP Send Successfully",
-              otp: generateOTP(),
+              otp: otp,
             };
+            connection.query("update users set otp = $1 where email = $2", [
+              otp,
+              email,
+            ]);
             resp.send(data);
           }
         });
@@ -316,18 +321,51 @@ const sendOtp = async (req, resp) => {
   );
 };
 
+const verifyOtp = async (req, resp) => {
+  const { email, otp } = req.body;
+  let dbOtp;
+  connection.query(
+    "select otp from users where email = $1",
+    [email],
+    (err, result) => {
+      if (err) {
+        let data = { status: 0, message: "Failed", data: result };
+        resp.send(data);
+      } else {
+        console.log(result.rows[0].otp);
+        dbOtp = result.rows[0].otp;
+        // let data = {
+        //   status: 1,
+        //   message: "Success",
+        //   totalItems: result.rowCount,
+        //   data: result.rows,
+        // };
+        // resp.send(data);
+      }
+    }
+  );
+
+  console.log("otp: ", otp);
+  console.log("dbOtp: ", dbOtp);
+
+  if (otp == dbOtp) {
+    let data = { status: 1, message: "OTP verified Successfully" };
+    resp.send(data);
+  } else {
+    let data = { status: 0, message: "OTP does not match" };
+    resp.send(data);
+  }
+};
+
 const resetPassword = async (req, resp) => {
-  const token = req.body["token"];
-  const decodeToken = jwt.decode(token, jwtKey);
-  const id = parseInt(decodeToken.id);
-  const { newPassword, confirmPassword } = req.body;
+  const { email, newPassword, confirmPassword } = req.body;
   const salt = await bcrypt.genSalt(10);
   const hassedPassword = await bcrypt.hash(confirmPassword, salt);
 
   if (newPassword == confirmPassword) {
     connection.query(
-      "update users set password = $1 where id = $2",
-      [hassedPassword, id],
+      "update users set password = $1 where email = $2",
+      [hassedPassword, email],
       (err, result) => {
         let data = { status: 1, message: "Reset Password Successfully" };
         resp.send(data);
@@ -416,6 +454,7 @@ module.exports = {
   changePassword,
   resetPassword,
   sendOtp,
+  verifyOtp,
   verifyToken,
   generateOTP,
 };

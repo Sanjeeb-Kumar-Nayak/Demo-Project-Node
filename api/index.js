@@ -20,5 +20,6 @@ app.post("/user/updateUser", user.verifyToken, user.updateUser);
 app.post("/user/changePassword", user.verifyToken, user.changePassword);
 app.post("/user/resetPassword", user.verifyToken, user.resetPassword);
 app.post("/user/sendOtp", user.sendOtp);
+app.post("/user/verifyOtp", user.verifyOtp);
 
 app.listen(8080);
