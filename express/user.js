@@ -323,38 +323,23 @@ const sendOtp = async (req, resp) => {
 
 const verifyOtp = async (req, resp) => {
   const { email, otp } = req.body;
-  let dbOtp;
+
   connection.query(
-    "select otp from users where email = $1",
-    [email],
+    "select * from users where email = $1 and otp = $2",
+    [email, otp],
     (err, result) => {
-      if (err) {
-        let data = { status: 0, message: "Failed", data: result };
+      if (result.rowCount != 0) {
+        let data = {
+          status: 1,
+          message: "OTP verified Successfully",
+        };
         resp.send(data);
       } else {
-        console.log(result.rows[0].otp);
-        dbOtp = result.rows[0].otp;
-        // let data = {
-        //   status: 1,
-        //   message: "Success",
-        //   totalItems: result.rowCount,
-        //   data: result.rows,
-        // };
-        // resp.send(data);
+        let data = { status: 0, message: "OTP does not match" };
+        resp.send(data);
       }
     }
   );
-
-  console.log("otp: ", otp);
-  console.log("dbOtp: ", dbOtp);
-
-  if (otp == dbOtp) {
-    let data = { status: 1, message: "OTP verified Successfully" };
-    resp.send(data);
-  } else {
-    let data = { status: 0, message: "OTP does not match" };
-    resp.send(data);
-  }
 };
 
 const resetPassword = async (req, resp) => {
