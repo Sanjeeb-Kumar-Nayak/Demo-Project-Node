@@ -22,11 +22,16 @@ let transporter = nodeMailer.createTransport({
 });
 
 const listingUser = (req, resp) => {
-  const { email, mobile, name } = req.body;
+  const { email, mobile, name, page, size } = req.body;
+  const offset = page * 10;
+
   let query = "select * from users where 1=1";
+
   if (email) query += ` and email = '${email}'`;
   if (mobile) query += ` and mobile = '${mobile}'`;
   if (name) query += ` and name = '${name}'`;
+
+  query += ` limit ${size} offset ${offset}`;
 
   connection.query(query, (err, result) => {
     if (err) {
