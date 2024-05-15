@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const user = require("../express/user");
+const user = require("../postgresql/user");
 const app = express();
 
 app.use(express.json());

@@ -2,7 +2,7 @@ const nodeMailer = require("nodemailer");
 const otpGenerator = require("otp-generator");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-const connection = require("../postgresql/config");
+const connection = require("./database");
 const jwtKey = "secret";
 
 let transporter = nodeMailer.createTransport({
