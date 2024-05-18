@@ -4,9 +4,9 @@ const client = new MongoClient(url);
 const database = "e-com";
 
 async function dbConnect() {
-  let result = await client.connect();
-  let db = result.db(database);
-  return db.collection("product");
+  await client.connect();
+  let result = client.db(database);
+  return result.collection("product");
 }
 
 module.exports = dbConnect;
