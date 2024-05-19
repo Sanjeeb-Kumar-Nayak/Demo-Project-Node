@@ -5,7 +5,7 @@ const database = "e-com";
 
 async function userDataBaseConnect() {
   await client.connect();
-  let result = result.db(database);
+  let result = client.db(database);
   return result.collection("users");
 }
 
