@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const user = require("../postgresql/user");
 const userMongoDB = require("../mongodb/user");
+const userMongoose = require("../mongoose/user");
 const app = express();
 
 app.use(express.json());
@@ -29,5 +30,11 @@ app.post("/usermongodb/listingUser", userMongoDB.listingUser);
 app.post("/usermongodb/createUser", userMongoDB.createUser);
 app.post("/usermongodb/updateUser", userMongoDB.updateUser);
 app.post("/usermongodb/deleteUser", userMongoDB.deleteUser);
+
+// Mongoose
+app.post("/usermongoose/listingUser", userMongoose.listingUser);
+app.post("/usermongoose/createUser", userMongoose.createUser);
+app.post("/usermongoose/updateUser", userMongoose.updateUser);
+app.post("/usermongoose/deleteUser", userMongoose.deleteUser);
 
 app.listen(8080);
