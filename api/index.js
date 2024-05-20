@@ -25,7 +25,9 @@ app.post("/user/sendOtp", user.sendOtp);
 app.post("/user/verifyOtp", user.verifyOtp);
 
 // MongoDB
-app.post("/usermongodb/listingUser", userMongoDB.ListingUser);
-app.post("/usermongodb/createUser", userMongoDB.CreateUser);
+app.post("/usermongodb/listingUser", userMongoDB.listingUser);
+app.post("/usermongodb/createUser", userMongoDB.createUser);
+app.post("/usermongodb/updateUser", userMongoDB.updateUser);
+app.post("/usermongodb/deleteUser", userMongoDB.deleteUser);
 
 app.listen(8080);
