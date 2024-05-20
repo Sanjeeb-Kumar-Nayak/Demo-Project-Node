@@ -1,4 +1,4 @@
-const connection = require("./userDatabase");
+const connection = require("./database");
 
 const listingUser = async (req, resp) => {
   let dbConnect = await connection();
