@@ -26,9 +26,28 @@ const deleteUser = async (req, resp) => {
   resp.send(result);
 };
 
+const loginUser = async (req, resp) => {
+  let { email, password } = req.body;
+  let response = await schema.userModel.findOne({ email });
+
+  if (response) {
+    if (response.password === password) {
+      let result = { status: 1, message: "Login Successfull", data: response };
+      resp.send(result);
+    } else {
+      let result = { message: "Worng Passord" };
+      resp.send(result);
+    }
+  } else {
+    let result = { message: "Worng Email" };
+    resp.send(result);
+  }
+};
+
 module.exports = {
   listingUser,
   createUser,
   updateUser,
   deleteUser,
+  loginUser,
 };
