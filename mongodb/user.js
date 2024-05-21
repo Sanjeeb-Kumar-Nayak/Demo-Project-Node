@@ -9,11 +9,13 @@ const listingUser = async (req, resp) => {
 };
 
 const createUser = async (req, resp) => {
-  const { email, password } = req.body;
+  const { name, mobile, email, password } = req.body;
   const salt = await bcrypt.genSalt(10);
   const hassedPassword = await bcrypt.hash(password, salt);
 
   let data = {
+    name: name,
+    mobile: mobile,
     email: email,
     password: hassedPassword,
   };
@@ -31,23 +33,40 @@ const createUser = async (req, resp) => {
 };
 
 const updateUser = async (req, resp) => {
-  let { email, password } = req.body;
+  let { email, mobile, name, password } = req.body;
   const salt = await bcrypt.genSalt(10);
   const hassedPassword = await bcrypt.hash(password, salt);
 
+  let data = {
+    name: name,
+    mobile: mobile,
+    password: hassedPassword,
+  };
+
   let dbConnect = await connection();
-  let result = await dbConnect.updateOne(
-    { email: email },
-    { $set: { password: hassedPassword } }
-  );
-  resp.send(result);
+  let response = await dbConnect.findOne({ email });
+
+  if (response) {
+    let result = await dbConnect.updateOne({ email: email }, { $set: data });
+    resp.send(result);
+  } else {
+    let data = { status: 0, message: "Please Enter Valid Data" };
+    resp.send(data);
+  }
 };
 
 const deleteUser = async (req, resp) => {
   let { email } = req.body;
   let dbConnect = await connection();
-  let result = await dbConnect.deleteOne(email);
-  resp.send(result);
+  let response = await dbConnect.findOne({ email });
+
+  if (response) {
+    let result = await dbConnect.deleteOne({ email });
+    resp.send(result);
+  } else {
+    let data = { status: 0, message: "Please Enter Valid Data" };
+    resp.send(data);
+  }
 };
 
 const loginUser = async (req, resp) => {
@@ -65,12 +84,12 @@ const loginUser = async (req, resp) => {
         };
         resp.send(data);
       } else {
-        let data = { message: "Wrong Password" };
+        let data = { status: 0, message: "Wrong Password" };
         resp.send(data);
       }
     });
   } else {
-    let data = { message: "Wrong Email" };
+    let data = { status: 0, message: "Wrong Email" };
     resp.send(data);
   }
 };
