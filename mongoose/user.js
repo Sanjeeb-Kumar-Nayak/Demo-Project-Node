@@ -16,9 +16,17 @@ const createUser = async (req, resp) => {
     email: email,
     password: hassedPassword,
   };
-  let response = new schema.userModel(data);
-  let result = await response.save();
-  resp.send(result);
+
+  let response1 = await schema.userModel.findOne({ email });
+
+  if (response1) {
+    let result = { status: 0, message: "User Already Exist" };
+    resp.send(result);
+  } else {
+    let response2 = new schema.userModel(data);
+    let result = await response2.save();
+    resp.send(result);
+  }
 };
 
 const updateUser = async (req, resp) => {

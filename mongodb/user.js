@@ -19,8 +19,15 @@ const createUser = async (req, resp) => {
   };
 
   let dbConnect = await connection();
-  let result = await dbConnect.insertOne(data);
-  resp.send(result);
+  let response = await dbConnect.findOne({ email });
+
+  if (response) {
+    let result = { status: 0, message: "User Already Exist" };
+    resp.send(result);
+  } else {
+    let result = await dbConnect.insertOne(data);
+    resp.send(result);
+  }
 };
 
 const updateUser = async (req, resp) => {
