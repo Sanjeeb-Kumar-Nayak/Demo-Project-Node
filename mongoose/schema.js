@@ -2,14 +2,14 @@ const mongoose = require("mongoose");
 require("./database");
 
 const productSchema = new mongoose.Schema({
-  name: String,
-  email: String,
-  mob: Number,
+  name: { type: String, required: true },
+  email: { type: String, required: true },
+  mob: { type: Number, required: true },
 });
 
 const userSchema = new mongoose.Schema({
-  email: String,
-  password: String,
+  email: { type: String, required: true },
+  password: { type: String, required: true },
 });
 
 const productModel = mongoose.model("informations", productSchema);
