@@ -451,4 +451,5 @@ module.exports = {
   resetPassword,
   sendOtp,
   verifyOtp,
+  verifyToken,
 };
