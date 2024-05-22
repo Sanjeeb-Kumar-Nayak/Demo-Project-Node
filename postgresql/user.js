@@ -1,25 +1,8 @@
-const nodeMailer = require("nodemailer");
-const otpGenerator = require("otp-generator");
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcrypt");
 const connection = require("./database");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const jwtKey = "secret";
-
-let transporter = nodeMailer.createTransport({
-  service: "gmail",
-  port: 465,
-  secure: true,
-  logger: true,
-  debug: true,
-  secureConnection: false,
-  auth: {
-    user: "skn.tilu@gmail.com",
-    pass: "tlmjmznltgayumjw",
-  },
-  tls: {
-    rejectUnauthorized: true,
-  },
-});
+const otpMail = require("../service/otpMail");
 
 const listingUser = (req, resp) => {
   const { email, mobile, name, page, size } = req.body;
@@ -296,7 +279,7 @@ const changePassword = async (req, resp) => {
 
 const sendOtp = async (req, resp) => {
   const { email } = req.body;
-  const otp = generateOTP();
+  const otp = otpMail.generateOTP();
   var mailOption = {
     from: "skn.tilu@gmail.com",
     to: email,
@@ -308,7 +291,7 @@ const sendOtp = async (req, resp) => {
     [email],
     (err, result) => {
       if (result.rowCount != 0) {
-        transporter.sendMail(mailOption, (err, info) => {
+        otpMail.transporter.sendMail(mailOption, (err, info) => {
           if (err) {
             console.log(err);
           } else {
@@ -429,15 +412,6 @@ function verifyToken(req, resp, next) {
     };
     resp.status(403).send(data);
   }
-}
-
-function generateOTP() {
-  const otp = otpGenerator.generate(6, {
-    upperCaseAlphabets: false,
-    lowerCaseAlphabets: false,
-    specialChars: false,
-  });
-  return otp;
 }
 
 module.exports = {

@@ -1,23 +1,6 @@
 const schema = require("./schema");
 const bcrypt = require("bcrypt");
-const nodeMailer = require("nodemailer");
-const otpGenerator = require("otp-generator");
-
-let transporter = nodeMailer.createTransport({
-  service: "gmail",
-  port: 465,
-  secure: true,
-  logger: true,
-  debug: true,
-  secureConnection: false,
-  auth: {
-    user: "skn.tilu@gmail.com",
-    pass: "tlmjmznltgayumjw",
-  },
-  tls: {
-    rejectUnauthorized: true,
-  },
-});
+const otpMail = require("../service/otpMail");
 
 const listingUser = async (req, resp) => {
   let response = await schema.userModel.find();
@@ -112,7 +95,7 @@ const loginUser = async (req, resp) => {
 
 const sendOtp = async (req, resp) => {
   const { email } = req.body;
-  const otp = generateOTP();
+  const otp = otpMail.generateOTP();
 
   var mailOption = {
     from: "skn.tilu@gmail.com",
@@ -123,7 +106,7 @@ const sendOtp = async (req, resp) => {
 
   let response = await schema.userModel.findOne({ email });
   if (response) {
-    transporter.sendMail(mailOption, async (err, info) => {
+    otpMail.transporter.sendMail(mailOption, async (err, info) => {
       if (err) {
         console.log(err);
       } else {
@@ -160,15 +143,6 @@ const verifyOtp = async (req, resp) => {
     resp.send(data);
   }
 };
-
-function generateOTP() {
-  const otp = otpGenerator.generate(6, {
-    upperCaseAlphabets: false,
-    lowerCaseAlphabets: false,
-    specialChars: false,
-  });
-  return otp;
-}
 
 module.exports = {
   listingUser,
