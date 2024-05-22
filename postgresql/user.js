@@ -295,8 +295,8 @@ const changePassword = async (req, resp) => {
 };
 
 const sendOtp = async (req, resp) => {
-  const otp = generateOTP();
   const { email } = req.body;
+  const otp = generateOTP();
   var mailOption = {
     from: "skn.tilu@gmail.com",
     to: email,

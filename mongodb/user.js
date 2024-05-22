@@ -1,5 +1,23 @@
 const connection = require("./database");
 const bcrypt = require("bcrypt");
+const nodeMailer = require("nodemailer");
+const otpGenerator = require("otp-generator");
+
+let transporter = nodeMailer.createTransport({
+  service: "gmail",
+  port: 465,
+  secure: true,
+  logger: true,
+  debug: true,
+  secureConnection: false,
+  auth: {
+    user: "skn.tilu@gmail.com",
+    pass: "plajrafakposgczt",
+  },
+  tls: {
+    rejectUnauthorized: true,
+  },
+});
 
 const listingUser = async (req, resp) => {
   let dbConnect = await connection();
@@ -94,10 +112,56 @@ const loginUser = async (req, resp) => {
   }
 };
 
+const sendOtp = async (req, resp) => {
+  const { email } = req.body;
+  const otp = generateOTP();
+  var mailOption = {
+    from: "skn.tilu@gmail.com",
+    to: email,
+    subject: "OTP",
+    text: `User verification OTP: ${otp}`,
+  };
+
+  let dbConnect = await connection();
+  let response = await dbConnect.findOne({ email });
+
+  if (response) {
+    transporter.sendMail(mailOption, async (err, info) => {
+      if (err) {
+        console.log(err);
+      } else {
+        let data = {
+          status: 1,
+          message: "OTP Send Successfully",
+          otp: otp,
+        };
+        let result = await dbConnect.updateOne(
+          { email: email },
+          { $set: data }
+        );
+        resp.send(result);
+      }
+    });
+  } else {
+    let data = { status: 0, message: "User does not exist" };
+    resp.send(data);
+  }
+};
+
+function generateOTP() {
+  const otp = otpGenerator.generate(6, {
+    upperCaseAlphabets: false,
+    lowerCaseAlphabets: false,
+    specialChars: false,
+  });
+  return otp;
+}
+
 module.exports = {
   listingUser,
   createUser,
   updateUser,
   deleteUser,
   loginUser,
+  sendOtp,
 };

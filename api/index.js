@@ -31,6 +31,7 @@ app.post("/usermongodb/createUser", userMongoDB.createUser);
 app.post("/usermongodb/updateUser", userMongoDB.updateUser);
 app.post("/usermongodb/deleteUser", userMongoDB.deleteUser);
 app.post("/usermongodb/loginUser", userMongoDB.loginUser);
+app.post("/usermongodb/sendOtp", userMongoDB.sendOtp);
 
 // Mongoose
 app.post("/usermongoose/listingUser", userMongoose.listingUser);
