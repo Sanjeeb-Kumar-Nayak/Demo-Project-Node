@@ -12,7 +12,7 @@ let transporter = nodeMailer.createTransport({
   secureConnection: false,
   auth: {
     user: "skn.tilu@gmail.com",
-    pass: "plajrafakposgczt",
+    pass: "tlmjmznltgayumjw",
   },
   tls: {
     rejectUnauthorized: true,
@@ -115,6 +115,7 @@ const loginUser = async (req, resp) => {
 const sendOtp = async (req, resp) => {
   const { email } = req.body;
   const otp = generateOTP();
+  
   var mailOption = {
     from: "skn.tilu@gmail.com",
     to: email,
@@ -130,20 +131,15 @@ const sendOtp = async (req, resp) => {
       if (err) {
         console.log(err);
       } else {
-        let data = {
-          status: 1,
-          message: "OTP Send Successfully",
-          otp: otp,
-        };
         let result = await dbConnect.updateOne(
           { email: email },
-          { $set: data }
+          { $set: { otp } }
         );
         resp.send(result);
       }
     });
   } else {
-    let data = { status: 0, message: "User does not exist" };
+    let data = { status: 0, message: "Email does not exist" };
     resp.send(data);
   }
 };
