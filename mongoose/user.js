@@ -140,6 +140,27 @@ const sendOtp = async (req, resp) => {
   }
 };
 
+const verifyOtp = async (req, resp) => {
+  const { email, otp } = req.body;
+  let response = await schema.userModel.findOne({ email });
+
+  if (response) {
+    if (otp == response.otp) {
+      let data = {
+        status: 1,
+        message: "OTP verified Successfully",
+      };
+      resp.send(data);
+    } else {
+      let data = { status: 0, message: "OTP does not match" };
+      resp.send(data);
+    }
+  } else {
+    let data = { status: 0, message: "Wrong Email" };
+    resp.send(data);
+  }
+};
+
 function generateOTP() {
   const otp = otpGenerator.generate(6, {
     upperCaseAlphabets: false,
@@ -156,4 +177,5 @@ module.exports = {
   deleteUser,
   loginUser,
   sendOtp,
+  verifyOtp,
 };

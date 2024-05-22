@@ -32,6 +32,7 @@ app.post("/usermongodb/updateUser", userMongoDB.updateUser);
 app.post("/usermongodb/deleteUser", userMongoDB.deleteUser);
 app.post("/usermongodb/loginUser", userMongoDB.loginUser);
 app.post("/usermongodb/sendOtp", userMongoDB.sendOtp);
+app.post("/usermongodb/verifyOtp", userMongoDB.verifyOtp);
 
 // Mongoose
 app.post("/usermongoose/listingUser", userMongoose.listingUser);
@@ -40,5 +41,6 @@ app.post("/usermongoose/updateUser", userMongoose.updateUser);
 app.post("/usermongoose/deleteUser", userMongoose.deleteUser);
 app.post("/usermongoose/loginUser", userMongoose.loginUser);
 app.post("/usermongoose/sendOtp", userMongoose.sendOtp);
+app.post("/usermongoose/verifyOtp", userMongoose.verifyOtp);
 
 app.listen(8080);
