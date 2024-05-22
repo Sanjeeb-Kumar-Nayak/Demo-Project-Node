@@ -12,6 +12,7 @@ const userSchema = new mongoose.Schema({
   mobile: { type: Number, required: true },
   email: { type: String, required: true },
   password: { type: String, required: true },
+  otp: { type: Number, required: false },
 });
 
 const productModel = mongoose.model("informations", productSchema);
