@@ -16,7 +16,6 @@ app.use(
 // PostgreSQL
 app.post("/user/loginUser", user.loginUser);
 app.post("/user/listingUser", user.listingUser);
-app.post("/user/filterUser", user.filterUser);
 app.post("/user/createUser", user.createUser);
 app.post("/user/deleteUser", user.verifyToken, user.deleteUser);
 app.post("/user/updateUser", user.verifyToken, user.updateUser);

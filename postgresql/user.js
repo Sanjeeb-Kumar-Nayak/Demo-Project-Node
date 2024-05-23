@@ -32,112 +32,6 @@ const listingUser = (req, resp) => {
   });
 };
 
-const filterUser = (req, resp) => {
-  const { email, mobile, name } = req.body;
-
-  if (email) {
-    if (mobile) {
-      if (name) {
-        connection.query(
-          "select * from users where email = $1 and mobile = $2 and name = $3",
-          [email, mobile, name],
-          (err, result) => {
-            if (err) {
-              let data = { status: 0, message: "Failed", data: result };
-              resp.send(data);
-            } else {
-              let data = { status: 1, message: "Success", data: result.rows };
-              resp.send(data);
-            }
-          }
-        );
-      } else {
-        connection.query(
-          "select * from users where mobile = $1",
-          [mobile],
-          (err, result) => {
-            if (err) {
-              let data = { status: 0, message: "Failed", data: result };
-              resp.send(data);
-            } else {
-              let data = { status: 1, message: "Success", data: result.rows };
-              resp.send(data);
-            }
-          }
-        );
-      }
-    } else {
-      connection.query(
-        "select * from users where email = $1",
-        [email],
-        (err, result) => {
-          if (err) {
-            let data = { status: 0, message: "Failed", data: result };
-            resp.send(data);
-          } else {
-            let data = { status: 1, message: "Success", data: result.rows };
-            resp.send(data);
-          }
-        }
-      );
-    }
-  } else if (mobile) {
-    if (name) {
-      connection.query(
-        "select * from users where mobile = $1 and name = $2",
-        [mobile, name],
-        (err, result) => {
-          if (err) {
-            let data = { status: 0, message: "Failed", data: result };
-            resp.send(data);
-          } else {
-            let data = { status: 1, message: "Success", data: result.rows };
-            resp.send(data);
-          }
-        }
-      );
-    } else {
-      connection.query(
-        "select * from users where mobile = $1",
-        [mobile],
-        (err, result) => {
-          if (err) {
-            let data = { status: 0, message: "Failed", data: result };
-            resp.send(data);
-          } else {
-            let data = { status: 1, message: "Success", data: result.rows };
-            resp.send(data);
-          }
-        }
-      );
-    }
-  } else if (name) {
-    connection.query(
-      "select * from users where name = $1",
-      [name],
-      (err, result) => {
-        if (err) {
-          let data = { status: 0, message: "Failed", data: result };
-          resp.send(data);
-        } else {
-          let data = { status: 1, message: "Success", data: result.rows };
-          resp.send(data);
-        }
-      }
-    );
-  } else {
-    connection.query("select * from users", (err, result) => {
-      if (err) {
-        let data = { status: 0, message: "Failed", data: result };
-        resp.send(data);
-      } else {
-        let data = { status: 1, message: "Success", data: result.rows };
-        resp.send(data);
-      }
-    });
-  }
-};
-
 const createUser = async (req, resp) => {
   const { email, mobile, name, password } = req.body;
   const salt = await bcrypt.genSalt(10);
@@ -417,7 +311,6 @@ function verifyToken(req, resp, next) {
 module.exports = {
   loginUser,
   listingUser,
-  filterUser,
   createUser,
   deleteUser,
   updateUser,
