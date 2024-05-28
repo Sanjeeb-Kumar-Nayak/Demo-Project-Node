@@ -2,13 +2,6 @@ const connection = require("./database");
 const bcrypt = require("bcrypt");
 const otpMail = require("../service/otpMail");
 
-const listingUser = async (req, resp) => {
-  let dbConnect = await connection();
-  let response = await dbConnect.find().toArray();
-  let result = { status: 1, message: "Success", data: response };
-  resp.send(result);
-};
-
 const createUser = async (req, resp) => {
   const { name, mobile, email, password } = req.body;
   const salt = await bcrypt.genSalt(10);
@@ -33,6 +26,13 @@ const createUser = async (req, resp) => {
   }
 };
 
+const listingUser = async (req, resp) => {
+  let dbConnect = await connection();
+  let response = await dbConnect.find().toArray();
+  let result = { status: 1, message: "Success", data: response };
+  resp.send(result);
+};
+
 const updateUser = async (req, resp) => {
   let { email, mobile, name, password } = req.body;
   const salt = await bcrypt.genSalt(10);
@@ -52,6 +52,38 @@ const updateUser = async (req, resp) => {
     resp.send(result);
   } else {
     let data = { status: 0, message: "Please Enter Valid Data" };
+    resp.send(data);
+  }
+};
+
+const changePassword = async (req, resp) => {
+  let { email, currentPassword, newPassword, confirmPassword } = req.body;
+  const salt = await bcrypt.genSalt(10);
+  const hassedPassword = await bcrypt.hash(confirmPassword, salt);
+
+  let dbConnect = await connection();
+  let response = await dbConnect.findOne({ email });
+
+  if (response) {
+    bcrypt.compare(currentPassword, response.password, async (err, result) => {
+      if (result) {
+        if (newPassword == confirmPassword) {
+          let data = await dbConnect.updateOne(
+            { email: email },
+            { $set: { password: hassedPassword } }
+          );
+          resp.send(data);
+        } else {
+          let data = { status: 0, message: "Password does not match" };
+          resp.send(data);
+        }
+      } else {
+        let data = { status: 0, message: "Wrong Password" };
+        resp.send(data);
+      }
+    });
+  } else {
+    let data = { status: 0, message: "Wrong Email" };
     resp.send(data);
   }
 };
@@ -150,9 +182,10 @@ const verifyOtp = async (req, resp) => {
 };
 
 module.exports = {
-  listingUser,
   createUser,
+  listingUser,
   updateUser,
+  changePassword,
   deleteUser,
   loginUser,
   sendOtp,

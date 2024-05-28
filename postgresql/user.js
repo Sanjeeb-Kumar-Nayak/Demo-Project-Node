@@ -4,34 +4,6 @@ const jwt = require("jsonwebtoken");
 const jwtKey = "secret";
 const otpMail = require("../service/otpMail");
 
-const listingUser = (req, resp) => {
-  const { email, mobile, name, page, size } = req.body;
-  const offset = page * 10;
-
-  let query = "select * from users where 1=1";
-
-  if (email) query += ` and email = '${email}'`;
-  if (mobile) query += ` and mobile = '${mobile}'`;
-  if (name) query += ` and name = '${name}'`;
-
-  query += ` limit ${size} offset ${offset}`;
-
-  connection.query(query, (err, result) => {
-    if (err) {
-      let data = { status: 0, message: "Failed", data: result };
-      resp.send(data);
-    } else {
-      let data = {
-        status: 1,
-        message: "Success",
-        totalItems: result.rowCount,
-        data: result.rows,
-      };
-      resp.send(data);
-    }
-  });
-};
-
 const createUser = async (req, resp) => {
   const { email, mobile, name, password } = req.body;
   const salt = await bcrypt.genSalt(10);
@@ -87,6 +59,105 @@ const createUser = async (req, resp) => {
   );
 };
 
+const listingUser = (req, resp) => {
+  const { email, mobile, name, page, size } = req.body;
+  const offset = page * 10;
+
+  let query = "select * from users where 1=1";
+
+  if (email) query += ` and email = '${email}'`;
+  if (mobile) query += ` and mobile = '${mobile}'`;
+  if (name) query += ` and name = '${name}'`;
+
+  query += ` limit ${size} offset ${offset}`;
+
+  connection.query(query, (err, result) => {
+    if (err) {
+      let data = { status: 0, message: "Failed", data: result };
+      resp.send(data);
+    } else {
+      let data = {
+        status: 1,
+        message: "Success",
+        totalItems: result.rowCount,
+        data: result.rows,
+      };
+      resp.send(data);
+    }
+  });
+};
+
+const updateUser = async (req, resp) => {
+  const token = req.body["token"];
+  const decodeToken = jwt.decode(token, jwtKey);
+  const id = parseInt(decodeToken.id);
+  const { email, mobile, name, password } = req.body;
+  const salt = await bcrypt.genSalt(10);
+  const hassedPassword = await bcrypt.hash(password, salt);
+
+  connection.query(
+    "update users set email = $1, mobile = $2, name = $3, password = $4 where id = $5",
+    [email, mobile, name, hassedPassword, id],
+    (err, result) => {
+      let data = {
+        status: 1,
+        message: "User Updated Successfully",
+      };
+      resp.send(data);
+    }
+  );
+};
+
+const changePassword = async (req, resp) => {
+  const token = req.body["token"];
+  const decodeToken = jwt.decode(token, jwtKey);
+  const id = parseInt(decodeToken.id);
+  const { currentPassword, newPassword, confirmPassword } = req.body;
+  const salt = await bcrypt.genSalt(10);
+  const hassedPassword = await bcrypt.hash(confirmPassword, salt);
+
+  connection.query("select * from users where id = $1", [id], (err, result) => {
+    const userPassword = result.rows[0].password;
+    bcrypt.compare(currentPassword, userPassword, (err, result) => {
+      if (result) {
+        if (newPassword == confirmPassword) {
+          connection.query(
+            "update users set password = $1 where id = $2",
+            [hassedPassword, id],
+            (err, result) => {
+              let data = {
+                status: 1,
+                message: "Password Changed Successfully",
+              };
+              resp.send(data);
+            }
+          );
+        } else {
+          let data = { status: 0, message: "Password does not match" };
+          resp.send(data);
+        }
+      } else {
+        let data = { status: 0, message: "Enter Wrong Password" };
+        resp.send(data);
+      }
+    });
+  });
+};
+
+const deleteUser = (req, resp) => {
+  const token = req.body["token"];
+  const decodeToken = jwt.decode(token, jwtKey);
+  const id = parseInt(decodeToken.id);
+
+  connection.query("delete from users where id = $1", [id], (err, result) => {
+    let data = {
+      status: 1,
+      message: "User Deleted Successfully",
+    };
+    resp.send(data);
+  });
+};
+
 const loginUser = async (req, resp) => {
   const { email, password } = req.body;
 
@@ -133,42 +204,6 @@ const loginUser = async (req, resp) => {
       }
     }
   );
-};
-
-const changePassword = async (req, resp) => {
-  const token = req.body["token"];
-  const decodeToken = jwt.decode(token, jwtKey);
-  const id = parseInt(decodeToken.id);
-  const { currentPassword, newPassword, confirmPassword } = req.body;
-  const salt = await bcrypt.genSalt(10);
-  const hassedPassword = await bcrypt.hash(confirmPassword, salt);
-
-  connection.query("select * from users where id = $1", [id], (err, result) => {
-    const userPassword = result.rows[0].password;
-    bcrypt.compare(currentPassword, userPassword, (err, result) => {
-      if (result) {
-        if (newPassword == confirmPassword) {
-          connection.query(
-            "update users set password = $1 where id = $2",
-            [hassedPassword, id],
-            (err, result) => {
-              let data = {
-                status: 1,
-                message: "Password Changed Successfully",
-              };
-              resp.send(data);
-            }
-          );
-        } else {
-          let data = { status: 0, message: "Password does not match" };
-          resp.send(data);
-        }
-      } else {
-        let data = { status: 0, message: "Enter Wrong Password" };
-        resp.send(data);
-      }
-    });
-  });
 };
 
 const sendOtp = async (req, resp) => {
@@ -250,41 +285,6 @@ const resetPassword = async (req, resp) => {
   }
 };
 
-const updateUser = async (req, resp) => {
-  const token = req.body["token"];
-  const decodeToken = jwt.decode(token, jwtKey);
-  const id = parseInt(decodeToken.id);
-  const { email, mobile, name, password } = req.body;
-  const salt = await bcrypt.genSalt(10);
-  const hassedPassword = await bcrypt.hash(password, salt);
-
-  connection.query(
-    "update users set email = $1, mobile = $2, name = $3, password = $4 where id = $5",
-    [email, mobile, name, hassedPassword, id],
-    (err, result) => {
-      let data = {
-        status: 1,
-        message: "User Updated Successfully",
-      };
-      resp.send(data);
-    }
-  );
-};
-
-const deleteUser = (req, resp) => {
-  const token = req.body["token"];
-  const decodeToken = jwt.decode(token, jwtKey);
-  const id = parseInt(decodeToken.id);
-
-  connection.query("delete from users where id = $1", [id], (err, result) => {
-    let data = {
-      status: 1,
-      message: "User Deleted Successfully",
-    };
-    resp.send(data);
-  });
-};
-
 function verifyToken(req, resp, next) {
   const token = req.body["token"];
   if (token) {
@@ -309,14 +309,14 @@ function verifyToken(req, resp, next) {
 }
 
 module.exports = {
-  loginUser,
-  listingUser,
   createUser,
-  deleteUser,
+  listingUser,
   updateUser,
   changePassword,
-  resetPassword,
+  deleteUser,
+  loginUser,
   sendOtp,
   verifyOtp,
+  resetPassword,
   verifyToken,
 };

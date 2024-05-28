@@ -14,28 +14,29 @@ app.use(
 );
 
 // PostgreSQL
-app.post("/user/loginUser", user.loginUser);
-app.post("/user/listingUser", user.listingUser);
 app.post("/user/createUser", user.createUser);
-app.post("/user/deleteUser", user.verifyToken, user.deleteUser);
+app.post("/user/listingUser", user.listingUser);
 app.post("/user/updateUser", user.verifyToken, user.updateUser);
 app.post("/user/changePassword", user.verifyToken, user.changePassword);
-app.post("/user/resetPassword", user.verifyToken, user.resetPassword);
+app.post("/user/deleteUser", user.verifyToken, user.deleteUser);
+app.post("/user/loginUser", user.loginUser);
 app.post("/user/sendOtp", user.sendOtp);
 app.post("/user/verifyOtp", user.verifyOtp);
+app.post("/user/resetPassword", user.verifyToken, user.resetPassword);
 
 // MongoDB
-app.post("/usermongodb/listingUser", userMongoDB.listingUser);
 app.post("/usermongodb/createUser", userMongoDB.createUser);
+app.post("/usermongodb/listingUser", userMongoDB.listingUser);
 app.post("/usermongodb/updateUser", userMongoDB.updateUser);
+app.post("/usermongodb/changePassword", userMongoDB.changePassword);
 app.post("/usermongodb/deleteUser", userMongoDB.deleteUser);
 app.post("/usermongodb/loginUser", userMongoDB.loginUser);
 app.post("/usermongodb/sendOtp", userMongoDB.sendOtp);
 app.post("/usermongodb/verifyOtp", userMongoDB.verifyOtp);
 
 // Mongoose
-app.post("/usermongoose/listingUser", userMongoose.listingUser);
 app.post("/usermongoose/createUser", userMongoose.createUser);
+app.post("/usermongoose/listingUser", userMongoose.listingUser);
 app.post("/usermongoose/updateUser", userMongoose.updateUser);
 app.post("/usermongoose/deleteUser", userMongoose.deleteUser);
 app.post("/usermongoose/loginUser", userMongoose.loginUser);
