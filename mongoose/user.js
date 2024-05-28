@@ -14,7 +14,7 @@ const createUser = async (req, resp) => {
     password: hassedPassword,
   };
 
-  let response1 = await schema.userModel.findOne({ email });
+  const response1 = await schema.userModel.findOne({ email });
 
   if (response1) {
     let result = { status: 0, message: "User Already Exist" };
@@ -27,13 +27,34 @@ const createUser = async (req, resp) => {
 };
 
 const listingUser = async (req, resp) => {
-  let response = await schema.userModel.find();
-  let result = { status: 1, message: "Success", data: response };
-  resp.send(result);
+  const { email, mobile, name, page, size } = req.body;
+  const skip = page * 10;
+
+  let filter = {};
+
+  if (email) filter.email = email;
+  if (mobile) filter.mobile = mobile;
+  if (name) filter.name = name;
+
+  const totalItems = await schema.userModel.countDocuments(filter);
+  const response = await schema.userModel.find(filter).skip(skip).limit(size);
+
+  if (response) {
+    let result = {
+      status: 1,
+      message: "Success",
+      totalItems: totalItems,
+      data: response,
+    };
+    resp.send(result);
+  } else {
+    let result = { status: 0, message: "Failed" };
+    resp.send(result);
+  }
 };
 
 const updateUser = async (req, resp) => {
-  let { email, mobile, name, password } = req.body;
+  const { email, mobile, name, password } = req.body;
   const salt = await bcrypt.genSalt(10);
   const hassedPassword = await bcrypt.hash(password, salt);
 
@@ -43,7 +64,8 @@ const updateUser = async (req, resp) => {
     password: hassedPassword,
   };
 
-  let response = await schema.userModel.findOne({ email });
+  const response = await schema.userModel.findOne({ email });
+
   if (response) {
     let result = await schema.userModel.updateOne(
       { email: email },
@@ -57,11 +79,11 @@ const updateUser = async (req, resp) => {
 };
 
 const changePassword = async (req, resp) => {
-  let { email, currentPassword, newPassword, confirmPassword } = req.body;
+  const { email, currentPassword, newPassword, confirmPassword } = req.body;
   const salt = await bcrypt.genSalt(10);
   const hassedPassword = await bcrypt.hash(confirmPassword, salt);
 
-  let response = await schema.userModel.findOne({ email });
+  const response = await schema.userModel.findOne({ email });
 
   if (response) {
     bcrypt.compare(currentPassword, response.password, async (err, result) => {
@@ -88,8 +110,8 @@ const changePassword = async (req, resp) => {
 };
 
 const deleteUser = async (req, resp) => {
-  let { email } = req.body;
-  let response = await schema.userModel.findOne({ email });
+  const { email } = req.body;
+  const response = await schema.userModel.findOne({ email });
 
   if (response) {
     let result = await schema.userModel.deleteOne({ email });
@@ -101,8 +123,8 @@ const deleteUser = async (req, resp) => {
 };
 
 const loginUser = async (req, resp) => {
-  let { email, password } = req.body;
-  let response = await schema.userModel.findOne({ email });
+  const { email, password } = req.body;
+  const response = await schema.userModel.findOne({ email });
 
   if (response) {
     bcrypt.compare(password, response.password, (err, result) => {
@@ -135,7 +157,8 @@ const sendOtp = async (req, resp) => {
     text: `User verification OTP: ${otp}`,
   };
 
-  let response = await schema.userModel.findOne({ email });
+  const response = await schema.userModel.findOne({ email });
+
   if (response) {
     otpMail.transporter.sendMail(mailOption, async (err, info) => {
       if (err) {
@@ -156,7 +179,7 @@ const sendOtp = async (req, resp) => {
 
 const verifyOtp = async (req, resp) => {
   const { email, otp } = req.body;
-  let response = await schema.userModel.findOne({ email });
+  const response = await schema.userModel.findOne({ email });
 
   if (response) {
     if (otp == response.otp) {
@@ -176,11 +199,11 @@ const verifyOtp = async (req, resp) => {
 };
 
 const resetPassword = async (req, resp) => {
-  let { email, newPassword, confirmPassword } = req.body;
+  const { email, newPassword, confirmPassword } = req.body;
   const salt = await bcrypt.genSalt(10);
   const hassedPassword = await bcrypt.hash(confirmPassword, salt);
 
-  let response = await schema.userModel.findOne({ email });
+  const response = await schema.userModel.findOne({ email });
 
   if (response) {
     if (newPassword === confirmPassword) {
