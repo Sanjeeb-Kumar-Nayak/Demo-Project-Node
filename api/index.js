@@ -38,6 +38,7 @@ app.post("/usermongodb/verifyOtp", userMongoDB.verifyOtp);
 app.post("/usermongoose/createUser", userMongoose.createUser);
 app.post("/usermongoose/listingUser", userMongoose.listingUser);
 app.post("/usermongoose/updateUser", userMongoose.updateUser);
+app.post("/usermongoose/changePassword", userMongoose.changePassword);
 app.post("/usermongoose/deleteUser", userMongoose.deleteUser);
 app.post("/usermongoose/loginUser", userMongoose.loginUser);
 app.post("/usermongoose/sendOtp", userMongoose.sendOtp);
