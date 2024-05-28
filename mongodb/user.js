@@ -67,7 +67,7 @@ const changePassword = async (req, resp) => {
   if (response) {
     bcrypt.compare(currentPassword, response.password, async (err, result) => {
       if (result) {
-        if (newPassword == confirmPassword) {
+        if (newPassword === confirmPassword) {
           let data = await dbConnect.updateOne(
             { email: email },
             { $set: { password: hassedPassword } }
@@ -181,6 +181,31 @@ const verifyOtp = async (req, resp) => {
   }
 };
 
+const resetPassword = async (req, resp) => {
+  let { email, newPassword, confirmPassword } = req.body;
+  const salt = await bcrypt.genSalt(10);
+  const hassedPassword = await bcrypt.hash(confirmPassword, salt);
+
+  let dbConnect = await connection();
+  let response = await dbConnect.findOne({ email });
+
+  if (response) {
+    if (newPassword === confirmPassword) {
+      let data = await dbConnect.updateOne(
+        { email: email },
+        { $set: { password: hassedPassword } }
+      );
+      resp.send(data);
+    } else {
+      let data = { status: 0, message: "Password does not match" };
+      resp.send(data);
+    }
+  } else {
+    let data = { status: 0, message: "Wrong Email" };
+    resp.send(data);
+  }
+};
+
 module.exports = {
   createUser,
   listingUser,
@@ -190,4 +215,5 @@ module.exports = {
   loginUser,
   sendOtp,
   verifyOtp,
+  resetPassword,
 };

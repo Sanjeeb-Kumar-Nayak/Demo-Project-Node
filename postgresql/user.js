@@ -120,7 +120,7 @@ const changePassword = async (req, resp) => {
     const userPassword = result.rows[0].password;
     bcrypt.compare(currentPassword, userPassword, (err, result) => {
       if (result) {
-        if (newPassword == confirmPassword) {
+        if (newPassword === confirmPassword) {
           connection.query(
             "update users set password = $1 where id = $2",
             [hassedPassword, id],
@@ -270,7 +270,7 @@ const resetPassword = async (req, resp) => {
   const salt = await bcrypt.genSalt(10);
   const hassedPassword = await bcrypt.hash(confirmPassword, salt);
 
-  if (newPassword == confirmPassword) {
+  if (newPassword === confirmPassword) {
     connection.query(
       "update users set password = $1 where email = $2",
       [hassedPassword, email],

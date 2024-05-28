@@ -33,6 +33,7 @@ app.post("/usermongodb/deleteUser", userMongoDB.deleteUser);
 app.post("/usermongodb/loginUser", userMongoDB.loginUser);
 app.post("/usermongodb/sendOtp", userMongoDB.sendOtp);
 app.post("/usermongodb/verifyOtp", userMongoDB.verifyOtp);
+app.post("/usermongodb/resetPassword", userMongoDB.resetPassword);
 
 // Mongoose
 app.post("/usermongoose/createUser", userMongoose.createUser);
