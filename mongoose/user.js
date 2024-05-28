@@ -175,6 +175,30 @@ const verifyOtp = async (req, resp) => {
   }
 };
 
+const resetPassword = async (req, resp) => {
+  let { email, newPassword, confirmPassword } = req.body;
+  const salt = await bcrypt.genSalt(10);
+  const hassedPassword = await bcrypt.hash(confirmPassword, salt);
+
+  let response = await schema.userModel.findOne({ email });
+
+  if (response) {
+    if (newPassword === confirmPassword) {
+      let data = await schema.userModel.updateOne(
+        { email: email },
+        { $set: { password: hassedPassword } }
+      );
+      resp.send(data);
+    } else {
+      let data = { status: 0, message: "Password does not match" };
+      resp.send(data);
+    }
+  } else {
+    let data = { status: 0, message: "Wrong Email" };
+    resp.send(data);
+  }
+};
+
 module.exports = {
   createUser,
   listingUser,
@@ -184,4 +208,5 @@ module.exports = {
   loginUser,
   sendOtp,
   verifyOtp,
+  resetPassword,
 };

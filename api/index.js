@@ -44,5 +44,6 @@ app.post("/usermongoose/deleteUser", userMongoose.deleteUser);
 app.post("/usermongoose/loginUser", userMongoose.loginUser);
 app.post("/usermongoose/sendOtp", userMongoose.sendOtp);
 app.post("/usermongoose/verifyOtp", userMongoose.verifyOtp);
+app.post("/usermongoose/resetPassword", userMongoose.resetPassword);
 
 app.listen(8080);
