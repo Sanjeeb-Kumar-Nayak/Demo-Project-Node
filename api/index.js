@@ -1,11 +1,15 @@
 const express = require("express");
 const cors = require("cors");
+const multer = require("multer");
 const user = require("../postgresql/user");
 const userMongoDB = require("../mongodb/user");
 const userMongoose = require("../mongoose/user");
+const upload = multer();
 const app = express();
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(upload.array("files"));
 
 app.use(
   cors({
