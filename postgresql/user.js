@@ -5,6 +5,11 @@ const jwtKey = "secret";
 const otpMail = require("../service/otpMail");
 
 const createUser = async (req, resp) => {
+  // for multipart/form-data
+  const userData = JSON.parse(req.body.userDetails);
+  const userDocument = req.files;
+
+  // for json
   const { email, mobile, name, password } = req.body;
   const salt = await bcrypt.genSalt(10);
   const hassedPassword = await bcrypt.hash(password, salt);
