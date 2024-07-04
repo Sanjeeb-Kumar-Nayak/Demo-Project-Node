@@ -26,7 +26,7 @@ app.post("/user/deleteUser", user.verifyToken, user.deleteUser);
 app.post("/user/loginUser", user.loginUser);
 app.post("/user/sendOtp", user.sendOtp);
 app.post("/user/verifyOtp", user.verifyOtp);
-app.post("/user/resetPassword", user.verifyToken, user.resetPassword);
+app.post("/user/resetPassword", user.resetPassword);
 
 // MongoDB
 app.post("/usermongodb/createUser", userMongoDB.createUser);
