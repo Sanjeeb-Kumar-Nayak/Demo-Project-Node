@@ -8,7 +8,7 @@ async function dbConnect() {
     await client.connect();
     console.log("Connected to the mongodb database successfully");
     let result = client.db(database);
-    return result.collection("users");
+    return result.collection("user");
   } catch (error) {
     console.error("MongoDB database connecton error", error);
     throw error;
