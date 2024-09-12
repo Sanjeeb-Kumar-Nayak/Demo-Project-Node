@@ -17,17 +17,17 @@ const createUser = async (req, resp) => {
   connection.query(
     "select * from users where email = $1 or mobile = $2",
     [email, mobile],
-    (err, result) => {
+    (error, result) => {
       if (result.rowCount != 0) {
         connection.query(
           "select * from users where email = $1",
           [email],
-          (err, result) => {
+          (error, result) => {
             if (result.rowCount != 0) {
               connection.query(
                 "select * from users where mobile = $1",
                 [mobile],
-                (err, result) => {
+                (error, result) => {
                   if (result.rowCount != 0) {
                     let data = {
                       status: 0,
@@ -50,7 +50,7 @@ const createUser = async (req, resp) => {
         connection.query(
           "insert into users (email, mobile, name, password) values ($1, $2, $3, $4) returning *",
           [email, mobile, name, hassedPassword],
-          (err, result) => {
+          (error, result) => {
             let data = {
               status: 1,
               message: "User Created Successfully",
@@ -76,8 +76,8 @@ const listingUser = (req, resp) => {
 
   query += ` limit ${size} offset ${offset}`;
 
-  connection.query(query, (err, result) => {
-    if (err) {
+  connection.query(query, (error, result) => {
+    if (error) {
       let data = { status: 0, message: "Failed", data: result };
       resp.send(data);
     } else {
@@ -103,7 +103,7 @@ const updateUser = async (req, resp) => {
   connection.query(
     "update users set email = $1, mobile = $2, name = $3, password = $4 where id = $5",
     [email, mobile, name, hassedPassword, id],
-    (err, result) => {
+    (error, result) => {
       let data = {
         status: 1,
         message: "User Updated Successfully",
@@ -121,32 +121,36 @@ const changePassword = async (req, resp) => {
   const salt = await bcrypt.genSalt(10);
   const hassedPassword = await bcrypt.hash(confirmPassword, salt);
 
-  connection.query("select * from users where id = $1", [id], (err, result) => {
-    const userPassword = result.rows[0].password;
-    bcrypt.compare(currentPassword, userPassword, (err, result) => {
-      if (result) {
-        if (newPassword === confirmPassword) {
-          connection.query(
-            "update users set password = $1 where id = $2",
-            [hassedPassword, id],
-            (err, result) => {
-              let data = {
-                status: 1,
-                message: "Password Changed Successfully",
-              };
-              resp.send(data);
-            }
-          );
+  connection.query(
+    "select * from users where id = $1",
+    [id],
+    (error, result) => {
+      const userPassword = result.rows[0].password;
+      bcrypt.compare(currentPassword, userPassword, (error, result) => {
+        if (result) {
+          if (newPassword === confirmPassword) {
+            connection.query(
+              "update users set password = $1 where id = $2",
+              [hassedPassword, id],
+              (error, result) => {
+                let data = {
+                  status: 1,
+                  message: "Password Changed Successfully",
+                };
+                resp.send(data);
+              }
+            );
+          } else {
+            let data = { status: 0, message: "Password does not match" };
+            resp.send(data);
+          }
         } else {
-          let data = { status: 0, message: "Password does not match" };
+          let data = { status: 0, message: "Enter Wrong Password" };
           resp.send(data);
         }
-      } else {
-        let data = { status: 0, message: "Enter Wrong Password" };
-        resp.send(data);
-      }
-    });
-  });
+      });
+    }
+  );
 };
 
 const deleteUser = (req, resp) => {
@@ -154,7 +158,7 @@ const deleteUser = (req, resp) => {
   const decodeToken = jwt.decode(token, jwtKey);
   const id = parseInt(decodeToken.id);
 
-  connection.query("delete from users where id = $1", [id], (err, result) => {
+  connection.query("delete from users where id = $1", [id], (error, result) => {
     let data = {
       status: 1,
       message: "User Deleted Successfully",
@@ -169,14 +173,14 @@ const loginUser = async (req, resp) => {
   connection.query(
     "select * from users where email = $1",
     [email],
-    (err, result) => {
+    (error, result) => {
       if (result.rowCount != 0) {
         const userDetails = result.rows[0];
         const userPassword = userDetails.password;
-        bcrypt.compare(password, userPassword, (err, result) => {
+        bcrypt.compare(password, userPassword, (error, result) => {
           if (result) {
-            jwt.sign(userDetails, jwtKey, (err, result) => {
-              if (err) {
+            jwt.sign(userDetails, jwtKey, (error, result) => {
+              if (error) {
                 let data = {
                   status: 0,
                   message: "User not found",
@@ -223,11 +227,11 @@ const sendOtp = async (req, resp) => {
   connection.query(
     "select * from users where email = $1",
     [email],
-    (err, result) => {
+    (error, result) => {
       if (result.rowCount != 0) {
-        otpMail.transporter.sendMail(mailOption, (err, info) => {
-          if (err) {
-            console.log(err);
+        otpMail.transporter.sendMail(mailOption, (error, info) => {
+          if (error) {
+            console.log(error);
           } else {
             let data = {
               status: 1,
@@ -255,7 +259,7 @@ const verifyOtp = async (req, resp) => {
   connection.query(
     "select * from users where email = $1 and otp = $2",
     [email, otp],
-    (err, result) => {
+    (error, result) => {
       if (result.rowCount != 0) {
         let data = {
           status: 1,
@@ -279,7 +283,7 @@ const resetPassword = async (req, resp) => {
     connection.query(
       "update users set password = $1 where email = $2",
       [hassedPassword, email],
-      (err, result) => {
+      (error, result) => {
         let data = { status: 1, message: "Reset Password Successfully" };
         resp.send(data);
       }
@@ -293,8 +297,8 @@ const resetPassword = async (req, resp) => {
 function verifyToken(req, resp, next) {
   const token = req.body["token"];
   if (token) {
-    jwt.verify(token, jwtKey, (err, valid) => {
-      if (err) {
+    jwt.verify(token, jwtKey, (error, valid) => {
+      if (error) {
         let data = {
           status: 0,
           message: "Please provide valid token",

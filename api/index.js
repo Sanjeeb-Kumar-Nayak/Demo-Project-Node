@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const multer = require("multer");
 const user = require("../postgresql/user");
+const master = require("../postgresql/masterData");
 const userMongoDB = require("../mongodb/user");
 const userMongoose = require("../mongoose/user");
 const upload = multer();
@@ -27,6 +28,10 @@ app.post("/user/loginUser", user.loginUser);
 app.post("/user/sendOtp", user.sendOtp);
 app.post("/user/verifyOtp", user.verifyOtp);
 app.post("/user/resetPassword", user.resetPassword);
+
+// Master
+app.post("/master/allDistrict", master.allDistrict);
+app.post("/master/allBlock", master.allBlock);
 
 // MongoDB
 app.post("/usermongodb/createUser", userMongoDB.createUser);
