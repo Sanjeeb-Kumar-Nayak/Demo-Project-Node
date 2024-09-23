@@ -2,9 +2,10 @@ const mongoose = require("mongoose");
 require("./database");
 
 const productSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  email: { type: String, required: true },
-  mob: { type: Number, required: true },
+  category: { type: String, required: true },
+  brand: { type: String, required: true },
+  model: { type: String, required: true },
+  price: { type: Number, required: true },
 });
 
 const userSchema = new mongoose.Schema({
@@ -15,7 +16,7 @@ const userSchema = new mongoose.Schema({
   otp: { type: Number, required: false },
 });
 
-const productModel = mongoose.model("informations", productSchema);
+const productModel = mongoose.model("product", productSchema);
 const userModel = mongoose.model("users", userSchema);
 
 module.exports = {
